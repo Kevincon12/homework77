@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { randomUUID } = require('crypto');
+const { upload } = require('./multer');
 
 const app = express();
 const port = 8000;
@@ -9,6 +10,7 @@ const port = 8000;
 const dbPath = path.join(__dirname, 'db.json');
 
 app.use(express.json());
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 const readMessages = () => {
     if (!fs.existsSync(dbPath)) return [];
@@ -20,7 +22,7 @@ app.get('/messages', (req, res) => {
     res.send(messages);
 });
 
-app.post('/messages', (req, res) => {
+app.post('/messages', upload.single('image'), (req, res) => {
     const { author, message } = req.body;
 
     if (!message || message.trim() === '') {
@@ -33,7 +35,7 @@ app.post('/messages', (req, res) => {
         id: randomUUID(),
         author: author && author.trim() !== '' ? author : 'Аноним',
         message,
-        image: null
+        image: req.file ? `images/${req.file.filename}` : null,
     };
 
     messages.push(newMessage);
