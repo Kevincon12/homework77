@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { randomUUID } = require('crypto');
@@ -9,6 +10,7 @@ const port = 8000;
 
 const dbPath = path.join(__dirname, 'db.json');
 
+app.use(cors());
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
@@ -43,6 +45,13 @@ app.post('/messages', upload.single('image'), (req, res) => {
     fs.writeFileSync(dbPath, JSON.stringify(messages, null, 2));
 
     res.send(newMessage);
+});
+
+app.delete('/messages/:id', (req, res) => {
+    const messages = readMessages();
+    const newMessages = messages.filter(m => m.id !== req.params.id);
+    fs.writeFileSync(dbPath, JSON.stringify(newMessages, null, 2));
+    res.send({ success: true });
 });
 
 app.listen(port, () => {

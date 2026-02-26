@@ -52,6 +52,14 @@ export const addMessage = createAsyncThunk(
     }
 );
 
+export const deleteMessage = createAsyncThunk(
+    'messages/deleteMessage',
+    async (id: string) => {
+        await axios.delete(`${API_URL}/messages/${id}`);
+        return id;
+    }
+);
+
 const messagesSlice = createSlice({
     name: 'messages',
     initialState,
@@ -77,6 +85,9 @@ const messagesSlice = createSlice({
             .addCase(addMessage.fulfilled, (state, action: PayloadAction<Message>) => {
                 state.loading = false;
                 state.items.push(action.payload);
+            })
+            .addCase(deleteMessage.fulfilled, (state, action: PayloadAction<string>) => {
+                state.items = state.items.filter(m => m.id !== action.payload);
             })
             .addCase(addMessage.rejected, (state, action) => {
                 state.loading = false;
